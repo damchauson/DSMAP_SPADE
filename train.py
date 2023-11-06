@@ -33,12 +33,18 @@ if __name__ == '__main__':
     trainer = DSMAP_Trainer(config)
     trainer.build_optimizer(config)
 
-    trainer.cuda()
+    device = "cpu"
+    if torch.cuda.is_available:
+        device = "cuda"
+    elif torch.backends.mps.is_built():
+        device = "mps"
+
+    trainer.to(torch.device(device))
     train_loader_a, train_loader_b, test_loader_a, test_loader_b = get_all_data_loaders(config)
-    train_display_images_a = torch.stack([train_loader_a.dataset[i] for i in range(display_size)]).cuda()
-    train_display_images_b = torch.stack([train_loader_b.dataset[i] for i in range(display_size)]).cuda()
-    test_display_images_a = torch.stack([test_loader_a.dataset[i] for i in range(display_size)]).cuda()
-    test_display_images_b = torch.stack([test_loader_b.dataset[i] for i in range(display_size)]).cuda()
+    train_display_images_a = torch.stack([train_loader_a.dataset[i] for i in range(display_size)]).to(torch.device(device))
+    train_display_images_b = torch.stack([train_loader_b.dataset[i] for i in range(display_size)]).to(torch.device(device))
+    test_display_images_a = torch.stack([test_loader_a.dataset[i] for i in range(display_size)]).to(torch.device(device))
+    test_display_images_b = torch.stack([test_loader_b.dataset[i] for i in range(display_size)]).to(torch.device(device))
 
     # Setup logger and output folders
     data_name = os.path.splitext(os.path.basename(opts.config))[0]
@@ -58,7 +64,7 @@ if __name__ == '__main__':
     while True:
         for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
             trainer.update_learning_rate()
-            images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()
+            images_a, images_b = images_a.to(torch.device(device)).detach(), images_b.to(torch.device(device)).detach()
 
             with Timer("Elapsed time in update: %f"):
                 # Main training code

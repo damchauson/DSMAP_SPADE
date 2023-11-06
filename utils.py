@@ -77,7 +77,7 @@ def get_test_data_loader_folder(input_folder, batch_size, new_size=None, num_wor
 
 def get_config(config):
     with open(config, 'r') as stream:
-        return yaml.load(stream)
+        return yaml.safe_load(stream)
 
 
 def __write_images(image_outputs, display_image_num, file_name):

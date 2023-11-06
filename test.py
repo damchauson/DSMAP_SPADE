@@ -34,7 +34,13 @@ if __name__ == '__main__':
     model.gen_a.load_state_dict(state_dict['a'])
     model.gen_b.load_state_dict(state_dict['b'])
 
-    model.cuda()
+    device = "cpu"
+    if torch.cuda.is_available:
+        device = "cuda"
+    elif torch.backends.mps.is_built():
+        device = "mps"
+
+    model.to(torch.device(device))
     model.eval()
     encode = model.gen_a.encode if opts.a2b else model.gen_b.encode
     style_encode = model.gen_b.encode if opts.a2b else model.gen_a.encode
@@ -44,7 +50,7 @@ if __name__ == '__main__':
     loader_content, loader_style = get_test_data_loaders(opts.test_path, opts.a2b, new_size=config['new_size'])
 
     for idx1, img1 in enumerate(loader_content):
-        img1 = img1.cuda()
+        img1 = img1.to(torch.device(device))
         test_saver_path = os.path.join(opts.output_path, str(idx1))
         if not os.path.exists(test_saver_path):
             os.mkdir(test_saver_path)
@@ -54,7 +60,7 @@ if __name__ == '__main__':
 
         for idx2, img2 in enumerate(loader_style):
             #if idx2 >= 10: break
-            img2 = img2.cuda()
+            img2 = img2.to(torch.device(device))
             _, _, _, style, _, _ = style_encode(img2)
 
             with torch.no_grad():
