@@ -81,9 +81,16 @@ class DSMAP_Trainer(nn.Module):
         self.gen_opt.step()
 
     def gen_backward_latent(self, x_a, x_b, hyperparameters):
+
+        device = "cpu"
+        if torch.backends.mps.is_built():
+            device = "mps"
+        elif torch.cuda.is_available:
+            device = "cuda"
+
         # random sample style vector and multimodal training
-        s_a_random = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
-        s_b_random = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
+        s_a_random = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).to(torch.device(device)))
+        s_b_random = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).to(torch.device(device)))
         # decode
         x_ba_random = self.gen_a.decode(self.c_b, self.da_b, s_a_random)
         x_ab_random = self.gen_b.decode(self.c_a, self.db_a, s_b_random)
@@ -189,9 +196,15 @@ class DSMAP_Trainer(nn.Module):
         return contextual_loss(img_fea, target_fea)
 
     def dis_update(self, x_a, x_b, hyperparameters, iterations):
+        device = "cpu"
+        if torch.backends.mps.is_built():
+            device = "mps"
+        elif torch.cuda.is_available:
+            device = "cuda"
+
         self.dis_opt.zero_grad()
-        s_a_random = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).cuda())
-        s_b_random = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).cuda())
+        s_a_random = Variable(torch.randn(x_a.size(0), self.style_dim, 1, 1).to(torch.device(device)))
+        s_b_random = Variable(torch.randn(x_b.size(0), self.style_dim, 1, 1).to(torch.device(device)))
 
         # encode
         pre_c_a, c_a, c_domain_a, db_a, s_a, _, _ = self.gen_a.encode(x_a, training=True, flag=True)

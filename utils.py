@@ -114,13 +114,18 @@ def get_model_list(dirname, key):
 
 
 def vgg_preprocess(batch):
+    device = "cpu"
+    if torch.backends.mps.is_built():
+        device = "mps"
+    elif torch.cuda.is_available:
+        device = "cuda"
     tensortype = type(batch.data)
     batch = (batch + 1) / 2 # [-1, 1] -> [0, 1]
-    mean = tensortype(batch.data.size()).cuda()
+    mean = tensortype(batch.data.size()).to(torch.device(device))
     mean[:, 0, :, :] = 0.485
     mean[:, 1, :, :] = 0.456
     mean[:, 2, :, :] = 0.406
-    std = tensortype(batch.data.size()).cuda()
+    std = tensortype(batch.data.size()).to(torch.device(device))
     std[:, 0, :, :] = 0.229
     std[:, 1, :, :] = 0.224
     std[:, 2, :, :] = 0.225

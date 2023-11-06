@@ -34,10 +34,10 @@ if __name__ == '__main__':
     trainer.build_optimizer(config)
 
     device = "cpu"
-    if torch.cuda.is_available:
-        device = "cuda"
-    elif torch.backends.mps.is_built():
+    if torch.backends.mps.is_built():
         device = "mps"
+    elif torch.cuda.is_available:
+        device = "cuda"
 
     trainer.to(torch.device(device))
     train_loader_a, train_loader_b, test_loader_a, test_loader_b = get_all_data_loaders(config)
